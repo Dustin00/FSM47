@@ -27,6 +27,9 @@ namespace FSM
     FSMState _CurrentState = null;
     private List<StateAction> _EntryAction = null;
     private List<StateAction> _ExitAction = null;
+    private static Queue<string> _Queue = new Queue<string>();
+    private bool _isInAction = false;
+    private string _isInActionName = string.Empty;
 
     public FSM35(List<string> states, List<string> events, string startingState = "")
     {
@@ -212,9 +215,26 @@ namespace FSM
       return this;
     }
 
+    public void QueueAct(string eventName)
+    {
+      _Queue.Enqueue(eventName);
+    }
+
     public void Act(string eventName)
     {
+      if (!_Events.ContainsKey(eventName))
+      {
+        throw new InvalidOperationException(string.Format("Event list is missing: {0}", eventName));
+      }
+      if (_isInAction)
+      {
+        throw new InvalidOperationException(string.Format("Cannot start a new Act '{0}' when already evaluating '{1}' -- QueueAct() it instead", eventName, _isInActionName));
+      }
+
       var fsmEvent = _Events[eventName];
+
+      _isInAction = true;
+      _isInActionName = fsmEvent.Name;
 
       FSMAction transition = null;
       foreach (var key in _Actions.Keys)
@@ -227,12 +247,27 @@ namespace FSM
       }
       if (transition == null)
       {
+        FinishAct();
         return; // Invalid Event for the Current State
       }
 
       ExitState();
 
       EnterState(transition.FinalState);
+
+      FinishAct();
+    }
+
+    private void FinishAct()
+    {
+      _isInAction = false;
+      _isInActionName = string.Empty;
+
+      if (_Queue.Count > 0)
+      {
+        string action = _Queue.Dequeue();
+        Act(action);
+      }
     }
 
     private void ExitState()
