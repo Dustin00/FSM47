@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace FSM35Player
+namespace FSM47Player
 {
   static class Program
   {
@@ -15,7 +15,7 @@ namespace FSM35Player
     {
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
-      Application.Run(new frmFSM35Player());
+      Application.Run(new frmFSM47Player());
     }
   }
 }

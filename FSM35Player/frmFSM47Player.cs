@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using FSM;
 
-/// A demonstration of the FSM35 library
+/// A demonstration of the FSM47 library
 
-namespace FSM35Player
+namespace FSM47Player
 {
-  public partial class frmFSM35Player : Form
+  public partial class frmFSM47Player : Form
   {
     private FSM47<States, FsmEvents> _StateManager = null;
 
@@ -30,7 +30,7 @@ namespace FSM35Player
       Last
 		}
 
-    public frmFSM35Player()
+    public frmFSM47Player()
     {
       InitializeComponent();
 
@@ -71,7 +71,7 @@ namespace FSM35Player
       // You control this because maybe your starting state has a Go() on it but you may not be ready for it to be running yet
     }
 
-    private void frmFSM35Player_Load(object sender, EventArgs e)
+    private void frmFSM47Player_Load(object sender, EventArgs e)
     {
       for (int n = 0; n <= 6; n++)
       {

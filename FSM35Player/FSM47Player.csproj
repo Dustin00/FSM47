@@ -46,11 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="frmFSM35Player.cs">
+    <Compile Include="frmFSM47Player.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmFSM35Player.Designer.cs">
-      <DependentUpon>frmFSM35Player.cs</DependentUpon>
+    <Compile Include="frmFSM47Player.Designer.cs">
+      <DependentUpon>frmFSM47Player.cs</DependentUpon>
     </Compile>
     <Compile Include="FSM47.cs" />
     <Compile Include="FSMAction.cs" />

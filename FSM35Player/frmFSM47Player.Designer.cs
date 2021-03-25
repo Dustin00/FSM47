@@ -1,6 +1,6 @@
-﻿namespace FSM35Player
+﻿namespace FSM47Player
 {
-    partial class frmFSM35Player
+    partial class frmFSM47Player
     {
         /// <summary>
         /// Required designer variable.
@@ -176,7 +176,7 @@
             this.btnClearConsole.UseVisualStyleBackColor = true;
             this.btnClearConsole.Click += new System.EventHandler(this.btnClearConsole_Click);
             // 
-            // frmFSM35Player
+            // frmFSM47Player
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -184,9 +184,9 @@
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.pnlControls);
-            this.Name = "frmFSM35Player";
-            this.Text = "FSM35 Player";
-            this.Load += new System.EventHandler(this.frmFSM35Player_Load);
+            this.Name = "frmFSM47Player";
+            this.Text = "FSM47 Player";
+            this.Load += new System.EventHandler(this.frmFSM47Player_Load);
             this.pnlControls.ResumeLayout(false);
             this.pnlControls.PerformLayout();
             this.groupBox2.ResumeLayout(false);
