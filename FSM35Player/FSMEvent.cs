@@ -1,22 +1,26 @@
-﻿namespace FSM
-{
-  public class FSMEvent
-  {
-    private int _ID = 0;
-    private string _Name = null;
+﻿using System;
+using System.Diagnostics; //todo: remove when Debug is done
 
-    public FSMEvent(string eventName)
+namespace FSM
+{
+  public class FSMEvent<EventEnum>
+    where EventEnum : Enum
+  {
+    private int _ID = 0; //todo: still needed?
+    private EventEnum _Name;
+
+    public FSMEvent(EventEnum eventName)
     {
       _Name = eventName;
-      _ID = _Name.GetDeterministicHashCode();
+      _ID = _Name.ToString().GetDeterministicHashCode();
     }
 
-    public override string ToString()
-    {
-      return _Name;
-    }
+    //public override string ToString()
+    //{
+    //  return _Name;
+    //}
 
-    public string Name
+    public EventEnum Name
     {
       get
       {

@@ -1,4 +1,6 @@
-﻿namespace FSM
+﻿using System;
+
+namespace FSM
 {
   public delegate void StateAction();
 
@@ -8,13 +10,15 @@
     public int SourceEventID;
   }
 
-  public class FSMAction
+  public class FSMAction<StateEnum, EventEnum>
+    where StateEnum : Enum
+    where EventEnum : Enum
   {
-    private FSMState _InitialState;
-    private FSMEvent _Event;
-    private FSMState _FinalState;
+    private FSMState<StateEnum> _InitialState;
+    private FSMEvent<EventEnum> _Event;
+    private FSMState<StateEnum> _FinalState;
 
-    public FSMAction(FSMState initialState, FSMEvent fsmEvent, FSMState finalState)
+    public FSMAction(FSMState<StateEnum> initialState, FSMEvent<EventEnum> fsmEvent, FSMState<StateEnum> finalState)
     {
       _InitialState = initialState;
       _Event = fsmEvent;
@@ -26,15 +30,15 @@
       return _InitialState.Name + " to " + _FinalState.Name;
     }
 
-    public FSMState InitialState
+    public FSMState<StateEnum> InitialState
     {
       get { return _InitialState; }
     }
-    public FSMEvent Event
+    public FSMEvent<EventEnum> Event
     {
       get { return _Event; }
     }
-    public FSMState FinalState
+    public FSMState<StateEnum> FinalState
     {
       get { return _FinalState; }
     }

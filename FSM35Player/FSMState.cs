@@ -1,26 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FSM
 {
-  public class FSMState
+  public class FSMState<StateEnum>
+    where StateEnum : Enum
   {
-    private int _ID = 0;
-    private string _Name = null;
+    private int _ID = 0; //todo: still needed?
+    private StateEnum _Name;
 
-    public FSMState(string stateName)
+    public FSMState(StateEnum stateName)
     {
       _Name = stateName;
-      _ID = _Name.GetDeterministicHashCode();
-      Debug.WriteLine(_Name + ": " + _ID);
+      _ID = _Name.ToString().GetDeterministicHashCode();
     }
 
-    public override string ToString()
-    {
-      return _Name;
-    }
+    //public override string ToString()
+    //{
+    //  return _Name;
+    //}
 
-    public string Name
+    public StateEnum Name
     {
       get
       {

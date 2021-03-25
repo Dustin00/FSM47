@@ -14,51 +14,51 @@ using System.Collections.Generic;
 
 namespace FSM
 {
-  public class FSM35
+  public class FSM47<StateEnum, EventEnum>
+    where StateEnum : Enum 
+    where EventEnum : Enum
   {
     const int INSTANT_ACTION = -1;
 
-    Dictionary<string, FSMEvent> _Events = null;
-    FSMEvent _BuildEvent = null;
-    Dictionary<string, FSMState> _States = null;
-    FSMState _BuildState = null;
-    FSMAction _BuildAction = null;
-    private Dictionary<ActionKey, FSMAction> _Actions = null;
-    FSMState _CurrentState = null;
+    Dictionary<EventEnum, FSMEvent<EventEnum>> _Events = null;
+    FSMEvent<EventEnum> _BuildEvent = null;
+    Dictionary<StateEnum, FSMState<StateEnum>> _States = null;
+    FSMState<StateEnum> _BuildState = null;
+    FSMAction<StateEnum, EventEnum> _BuildAction = null;
+    private Dictionary<ActionKey, FSMAction<StateEnum, EventEnum>> _Actions = null;
+    FSMState<StateEnum> _CurrentState = null;
     private List<StateAction> _EntryAction = null;
     private List<StateAction> _ExitAction = null;
-    private static Queue<string> _Queue = new Queue<string>();
+    private static Queue<EventEnum> _Queue = new Queue<EventEnum>();
     private bool _isInAction = false;
-    private string _isInActionName = string.Empty;
+    private EventEnum _isInActionName;
 
-    public FSM35(List<string> states, List<string> events, string startingState = "")
+    public FSM47(StateEnum startingState) //, List<string> states, List<string> events, string startingState = "")
     {
-      if (states.Count < 2)
-      {
+      if (Enum.GetNames(typeof(StateEnum)).Length < 2)
+			{
         throw new InvalidOperationException("You must have at least 2 states");
       }
 
-      if (events.Count == 0)
+      if (Enum.GetNames(typeof(EventEnum)).Length < 2)
       {
         throw new InvalidOperationException("You must have at least 1 event");
       }
 
-      _States = new Dictionary<string, FSMState>();
-      _Events = new Dictionary<string, FSMEvent>();
-      _Actions = new Dictionary<ActionKey, FSMAction>();
+      _States = new Dictionary<StateEnum, FSMState<StateEnum>>();
+      _Events = new Dictionary<EventEnum, FSMEvent<EventEnum>>();
+      _Actions = new Dictionary<ActionKey, FSMAction<StateEnum, EventEnum>>();
 
-      foreach (var state in states)
+      foreach (StateEnum state in (StateEnum[])Enum.GetValues(typeof(StateEnum)))
       {
-        var newState = new FSMState(state);
+        var newState = new FSMState<StateEnum>(state);
         _States.Add(state, newState);
       }
-      _CurrentState = (startingState == string.Empty)
-          ? _CurrentState = _States[states[0]]
-          : _CurrentState = _States[startingState];
+      _CurrentState = _States[startingState];
 
-      foreach (var eventName in events)
+      foreach (EventEnum eventName in (EventEnum[])Enum.GetValues(typeof(EventEnum)))
       {
-        var newEvent = new FSMEvent(eventName);
+        var newEvent = new FSMEvent<EventEnum>(eventName);
         _Events.Add(eventName, newEvent);
       }
 
@@ -66,29 +66,29 @@ namespace FSM
       _ExitAction = new List<StateAction>();
     }
 
-    public FSM35 InitialState(string stateName)
+    public FSM47<StateEnum, EventEnum> InitialState(StateEnum stateName)
     {
       if (_States != null)
       {
         throw new InvalidOperationException("Starting State already added, use Goto to add more states.");
       }
 
-      _States = new Dictionary<string, FSMState>();
+      _States = new Dictionary<StateEnum, FSMState<StateEnum>>();
 
-      _BuildState = new FSMState(stateName);
+      _BuildState = new FSMState<StateEnum>(stateName);
       _CurrentState = _BuildState;
 
       return Goto(stateName);
     }
 
-    public FSM35 Build()
+    public FSM47<StateEnum, EventEnum> Build()
     {
       FinalizePreviousActions();
 
       return this;
     }
 
-    public FSM35 Begin()
+    public FSM47<StateEnum, EventEnum> Begin()
     {
       CheckForInstantAction();
 
@@ -114,7 +114,7 @@ namespace FSM
       }
     }
 
-    public FSM35 In(string stateName)
+    public FSM47<StateEnum, EventEnum> In(StateEnum stateName)
     {
       if (!_States.ContainsKey(stateName))
       {
@@ -130,7 +130,7 @@ namespace FSM
       return this;
     }
 
-    public FSM35 Goto(string stateName)
+    public FSM47<StateEnum, EventEnum> Goto(StateEnum stateName)
     {
       if (_BuildState == null) // from In
       {
@@ -143,7 +143,7 @@ namespace FSM
 
       var newState = _States[stateName];
 
-      _BuildAction = new FSMAction(_BuildState, _BuildEvent, newState);
+      _BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, _BuildEvent, newState);
       ActionKey key = new ActionKey() { SourceStateID = _BuildState.ID, SourceEventID = _BuildEvent.ID };
       _Actions.Add(key, _BuildAction);
 
@@ -152,7 +152,7 @@ namespace FSM
       return this;
     }
 
-    public FSM35 Go(string stateName)
+    public FSM47<StateEnum, EventEnum> Go(StateEnum stateName)
     {
       if (_BuildState == null) // from In
       {
@@ -165,7 +165,7 @@ namespace FSM
 
       var newState = _States[stateName];
 
-      _BuildAction = new FSMAction(_BuildState, null, newState);
+      _BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, null, newState);
       ActionKey key = new ActionKey() { SourceStateID = _BuildState.ID, SourceEventID = INSTANT_ACTION };
       _Actions.Add(key, _BuildAction);
 
@@ -174,7 +174,7 @@ namespace FSM
       return this;
     }
 
-    public FSM35 At(string stateName)
+    public FSM47<StateEnum, EventEnum> At(StateEnum stateName)
     {
       if (!_States.ContainsKey(stateName))
       {
@@ -186,12 +186,12 @@ namespace FSM
       return this;
     }
 
-    public FSM35 On(string eventName)
+    public FSM47<StateEnum, EventEnum> On(EventEnum eventName)
     {
-      if (string.IsNullOrEmpty(eventName))
-      {
-        throw new InvalidOperationException("Parameter eventName may not be null or empty.");
-      }
+      //if (string.IsNullOrEmpty(eventName)) //todo: just remove this check?
+      //{
+      //  throw new InvalidOperationException("Parameter eventName may not be null or empty.");
+      //}
 
       if (!_Events.ContainsKey(eventName))
       {
@@ -203,40 +203,40 @@ namespace FSM
       return this;
     }
 
-    public FSM35 EntryAction(StateAction stateAction)
+    public FSM47<StateEnum, EventEnum> EntryAction(StateAction stateAction)
     {
       _EntryAction.Add(stateAction);
       return this;
     }
 
-    public FSM35 ExitAction(StateAction stateAction)
+    public FSM47<StateEnum, EventEnum> ExitAction(StateAction stateAction)
     {
       _ExitAction.Add(stateAction);
       return this;
     }
 
-    public void QueueAct(string eventName)
+    public void QueueAct(EventEnum eventType)
     {
-      _Queue.Enqueue(eventName);
+      _Queue.Enqueue(eventType);
     }
 
-    public void Act(string eventName)
+    public void Act(EventEnum eventType)
     {
-      if (!_Events.ContainsKey(eventName))
+      if (!_Events.ContainsKey(eventType))
       {
-        throw new InvalidOperationException(string.Format("Event list is missing: {0}", eventName));
+        throw new InvalidOperationException(string.Format("Event list is missing: {0}", eventType));
       }
       if (_isInAction)
       {
-        throw new InvalidOperationException(string.Format("Cannot start a new Act '{0}' when already evaluating '{1}' -- QueueAct() it instead", eventName, _isInActionName));
+        throw new InvalidOperationException(string.Format("Cannot start a new Act '{0}' when already evaluating '{1}' -- QueueAct() it instead", eventType, _isInActionName));
       }
 
-      var fsmEvent = _Events[eventName];
+      var fsmEvent = _Events[eventType];
 
       _isInAction = true;
       _isInActionName = fsmEvent.Name;
 
-      FSMAction transition = null;
+      FSMAction<StateEnum, EventEnum> transition = null;
       foreach (var key in _Actions.Keys)
       {
         if (key.SourceStateID == _CurrentState.ID && key.SourceEventID == fsmEvent.ID)
@@ -261,11 +261,10 @@ namespace FSM
     private void FinishAct()
     {
       _isInAction = false;
-      _isInActionName = string.Empty;
 
       if (_Queue.Count > 0)
       {
-        string action = _Queue.Dequeue();
+        EventEnum action = _Queue.Dequeue();
         Act(action);
       }
     }
@@ -281,7 +280,7 @@ namespace FSM
       }
     }
 
-    private void EnterState(FSMState nextState)
+    private void EnterState(FSMState<StateEnum> nextState)
     {
       if (nextState.EntryAction != null)
       {
@@ -298,7 +297,7 @@ namespace FSM
 
     private void CheckForInstantAction()
     {
-      FSMAction instantAction = null;
+      FSMAction<StateEnum, EventEnum> instantAction = null;
       foreach (var key in _Actions.Keys)
       {
         if (key.SourceStateID == _CurrentState.ID && key.SourceEventID == INSTANT_ACTION)

@@ -9,56 +9,32 @@ namespace FSM35Player
 {
   public partial class frmFSM35Player : Form
   {
-    private FSM35 _StateManager = null;
+    private FSM47<States, FsmEvents> _StateManager = null;
 
-    public static class States
+    public enum States
+		{
+      None,
+      Stopped,
+      Playing,
+      Paused,
+      Forwarding,
+      Reversing
+		}
+
+    public enum FsmEvents // Events already exists in too many .NET libraries, so I used this instead
     {
-      public const string None = "None";
-      public const string Stopped = "Stopped";
-      public const string Playing = "Playing";
-      public const string Paused = "Paused";
-      public const string Forwarding = "Forwarding";
-      public const string Reversing = "Reversing";
-
-      public static List<string> Items
-      {
-        get
-        {
-          return new List<string>()
-          {
-            // First state listed is the default FSM's starting State
-            // In FSM constructor, you can specify your starting State if you don't want the default
-            None, Stopped, Playing, Paused, Forwarding, Reversing
-          };
-        }
-      }
-    }
-
-    public static class Evnts // name this whatever you want -- Events already exists in too many .NET libraries, so I used this instead
-    {
-      public const string Stop = "Stop";
-      public const string Play = "Play";
-      public const string Pause = "Pause";
-      public const string Next = "Next";
-      public const string Last = "Last";
-
-      public static List<string> Items
-      {
-        get
-        {
-          return new List<string>()
-          {
-            Stop, Play, Pause, Next, Last
-          };
-        }
-      }
-    }
+      Stop,
+      Play,
+      Pause,
+      Next, 
+      Last
+		}
 
     public frmFSM35Player()
     {
       InitializeComponent();
 
-      _StateManager = new FSM35(States.Items, Evnts.Items) // unspecified starting state makes None the default
+      _StateManager = new FSM47<States, FsmEvents>(States.None) // unspecified starting state makes None the default
         .In(States.None) // For the starting state, both EntryAction() and Go() will be triggered when you call FSM.Begin()
           .Go(States.Stopped) // this demo only has a Go(), though
           .ExitAction(EnablePlayer); // will happen when you exit this state
@@ -67,19 +43,19 @@ namespace FSM35Player
         .In(States.Stopped)
           .EntryAction(StopEnterEvent)
           .ExitAction(StopExitEvent)
-          .On(Evnts.Play).Goto(States.Playing)
+          .On(FsmEvents.Play).Goto(States.Playing)
         .In(States.Playing)
           .EntryAction(PlayEnterEvent)
           .ExitAction(PlayExitEvent)
-          .On(Evnts.Stop).Goto(States.Stopped)
-          .On(Evnts.Pause).Goto(States.Paused)
-          .On(Evnts.Next).Goto(States.Forwarding)
-          .On(Evnts.Last).Goto(States.Reversing)
+          .On(FsmEvents.Stop).Goto(States.Stopped)
+          .On(FsmEvents.Pause).Goto(States.Paused)
+          .On(FsmEvents.Next).Goto(States.Forwarding)
+          .On(FsmEvents.Last).Goto(States.Reversing)
         .In(States.Paused)
           .EntryAction(PauseEnterEvent)
           .ExitAction(PauseExitEvent)
-          .On(Evnts.Stop).Goto(States.Stopped)
-          .On(Evnts.Play).Goto(States.Playing)
+          .On(FsmEvents.Stop).Goto(States.Stopped)
+          .On(FsmEvents.Play).Goto(States.Playing)
         .In(States.Forwarding)
           .EntryAction(NextEvent)
           .Go(States.Playing)
@@ -112,27 +88,27 @@ namespace FSM35Player
 
     private void btnStop_Click(object sender, EventArgs e)
     {
-      _StateManager.Act(Evnts.Stop);
+      _StateManager.Act(FsmEvents.Stop);
     }
 
     private void btnPlay_Click(object sender, EventArgs e)
     {
-      _StateManager.Act(Evnts.Play);
+      _StateManager.Act(FsmEvents.Play);
     }
 
     private void btnPause_Click(object sender, EventArgs e)
     {
-      _StateManager.Act(Evnts.Pause);
+      _StateManager.Act(FsmEvents.Pause);
     }
 
     private void btnLast_Click(object sender, EventArgs e)
     {
-      _StateManager.Act(Evnts.Last);
+      _StateManager.Act(FsmEvents.Last);
     }
 
     private void btnNext_Click(object sender, EventArgs e)
     {
-      _StateManager.Act(Evnts.Next);
+      _StateManager.Act(FsmEvents.Next);
     }
 
     private void btnClearConsole_Click(object sender, EventArgs e)
@@ -164,7 +140,7 @@ namespace FSM35Player
       {
         lstTracks.SelectedIndex = 0;
       }
-      lstConsole.Items.Add("Enter Playing for track " + lstTracks.SelectedItem);
+      lstConsole.Items.Add($"Enter Playing for track {lstTracks.SelectedItem}");
       txtState.Text = "Playing";
       btnStop.Enabled = true;
       btnPause.Enabled = true;
@@ -216,7 +192,7 @@ namespace FSM35Player
       if (lstTracks.SelectedIndex < lstTracks.Items.Count - 1)
       {
         lstTracks.SelectedIndex = lstTracks.SelectedIndex + 1;
-        lstConsole.Items.Add("Selected track " + lstTracks.SelectedItem);
+        lstConsole.Items.Add($"Selected track {lstTracks.SelectedItem}");
       }
       else
       {
