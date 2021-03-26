@@ -6,7 +6,7 @@ namespace FSM
   public class FSMState<StateEnum>
     where StateEnum : Enum
   {
-    private int _ID = 0; //todo: still needed?
+    private int _ID = 0;
     private StateEnum _Name;
 
     public FSMState(StateEnum stateName)
@@ -14,11 +14,6 @@ namespace FSM
       _Name = stateName;
       _ID = _Name.ToString().GetDeterministicHashCode();
     }
-
-    //public override string ToString()
-    //{
-    //  return _Name;
-    //}
 
     public StateEnum Name
     {

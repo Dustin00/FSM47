@@ -188,11 +188,6 @@ namespace FSM
 
     public FSM47<StateEnum, EventEnum> On(EventEnum eventName)
     {
-      //if (string.IsNullOrEmpty(eventName)) //todo: just remove this check?
-      //{
-      //  throw new InvalidOperationException("Parameter eventName may not be null or empty.");
-      //}
-
       if (!_Events.ContainsKey(eventName))
       {
         throw new InvalidOperationException("Event named " + eventName + " not declared in class constructor.");
