@@ -36,7 +36,7 @@ namespace FSM47Player
       InitializeComponent();
 
       _StateManager = new FSM47<States, FsmEvents>(States.None) // must specify starting state
-        .In(States.None) // For the starting state, both EntryAction() and Go() will be triggered when you call FSM.Begin()
+        .In(States.None) // For the starting state, Go() will be triggered when you call FSM.Begin()
           .Go(States.Stopped) // this demo only has a Go(), though
           .ExitAction(EnablePlayer); // will happen when you exit this state
 

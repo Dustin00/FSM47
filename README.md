@@ -31,23 +31,23 @@ Demo project has example notes in frmFSM47Player.cs
 
     private FSM47<States, FsmEvents> _StateManager = null;
 
-    public enum States
+	public enum States
 	{
-      None,
-      Stopped,
-      Playing,
-      Paused,
-      Forwarding,
-      Reversing
+	  None,
+	  Stopped,
+	  Playing,
+	  Paused,
+	  Forwarding,
+	  Reversing
 	}
 
-    public enum FsmEvents // Events already exists in too many .NET libraries, so I used this instead
-    {
-      Stop,
-      Play,
-      Pause,
-      Next, 
-      Last
+	public enum FsmEvents // Events already exists in too many .NET libraries, so I used this instead
+	{
+	  Stop,
+	  Play,
+	  Pause,
+	  Next, 
+	  Last
 	}
 
     public frmFSM47Player()
