@@ -27,7 +27,7 @@ namespace FSM
 
     public override string ToString()
     {
-      return _InitialState.Name + " to " + _FinalState.Name;
+      return $"{_InitialState.Name} to {_FinalState.Name}";
     }
 
     public FSMState<StateEnum> InitialState

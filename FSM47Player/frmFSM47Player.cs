@@ -27,8 +27,9 @@ namespace FSM47Player
       Play,
       Pause,
       Next, 
-      Last
-		}
+      Last,
+      OtherThing // Used to show .On(event).Do(SomeAction), but is never actually called by any .Act(event) used in this example
+    }
 
     public frmFSM47Player()
     {
@@ -51,6 +52,7 @@ namespace FSM47Player
           .On(FsmEvents.Pause).Goto(States.Paused)
           .On(FsmEvents.Next).Goto(States.Forwarding)
           .On(FsmEvents.Last).Goto(States.Reversing)
+          .On(FsmEvents.OtherThing).Do(PlayOtherThing) // Connecting an event to a Do(Action) that doesn't change state
         .In(States.Paused)
           .EntryAction(PauseEnterEvent)
           .ExitAction(PauseExitEvent)
@@ -73,9 +75,9 @@ namespace FSM47Player
 
     private void frmFSM47Player_Load(object sender, EventArgs e)
     {
-      for (int n = 0; n <= 6; n++)
+      for (int n = 0; n <= 3; n++)
       {
-        lstTracks.Items.Add("Track " + n);
+        lstTracks.Items.Add($"Track {n}");
       }
 
       _StateManager.Begin();
@@ -134,6 +136,11 @@ namespace FSM47Player
       btnPlay.Enabled = false;
     }
 
+    private void PlayOtherThing()
+		{
+      // This is called by the FSMDo(Action) to show it in code, but is not implemented to do anything in this sample app
+		}
+
     private void PlayEnterEvent()
     {
       if (-1 == lstTracks.SelectedIndex)
@@ -178,7 +185,7 @@ namespace FSM47Player
       if (lstTracks.SelectedIndex > 0)
       {
         lstTracks.SelectedIndex = lstTracks.SelectedIndex - 1;
-        lstConsole.Items.Add("Selected track " + lstTracks.SelectedItem);
+        lstConsole.Items.Add($"Selected track {lstTracks.SelectedItem}");
       }
       else
       {

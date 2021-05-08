@@ -54,11 +54,15 @@
     </Compile>
     <Compile Include="FSM47.cs" />
     <Compile Include="FSMAction.cs" />
+    <Compile Include="FSMDo.cs" />
     <Compile Include="FSMEvent.cs" />
     <Compile Include="FSMExtension.cs" />
     <Compile Include="FSMState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="frmFSM47Player.resx">
+      <DependentUpon>frmFSM47Player.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

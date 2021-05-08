@@ -15,7 +15,7 @@ using System.Collections.Generic;
 namespace FSM
 {
   public class FSM47<StateEnum, EventEnum>
-    where StateEnum : Enum 
+    where StateEnum : Enum
     where EventEnum : Enum
   {
     const int INSTANT_ACTION = -1;
@@ -25,7 +25,9 @@ namespace FSM
     Dictionary<StateEnum, FSMState<StateEnum>> _States = null;
     FSMState<StateEnum> _BuildState = null;
     FSMAction<StateEnum, EventEnum> _BuildAction = null;
+    FSMDo<StateEnum, EventEnum> _BuildDo = null;
     private Dictionary<ActionKey, FSMAction<StateEnum, EventEnum>> _Actions = null;
+    private Dictionary<ActionKey, FSMDo<StateEnum, EventEnum>> _Do = null;
     FSMState<StateEnum> _CurrentState = null;
     private List<StateAction> _EntryAction = null;
     private List<StateAction> _ExitAction = null;
@@ -36,7 +38,7 @@ namespace FSM
     public FSM47(StateEnum startingState) //, List<string> states, List<string> events, string startingState = "")
     {
       if (Enum.GetNames(typeof(StateEnum)).Length < 2)
-			{
+      {
         throw new InvalidOperationException("You must have at least 2 states");
       }
 
@@ -48,6 +50,7 @@ namespace FSM
       _States = new Dictionary<StateEnum, FSMState<StateEnum>>();
       _Events = new Dictionary<EventEnum, FSMEvent<EventEnum>>();
       _Actions = new Dictionary<ActionKey, FSMAction<StateEnum, EventEnum>>();
+      _Do = new Dictionary<ActionKey, FSMDo<StateEnum, EventEnum>>();
 
       foreach (StateEnum state in (StateEnum[])Enum.GetValues(typeof(StateEnum)))
       {
@@ -118,7 +121,7 @@ namespace FSM
     {
       if (!_States.ContainsKey(stateName))
       {
-        throw new InvalidOperationException("Unable to find key " + stateName + " in States.");
+        throw new InvalidOperationException($"Unable to find key {stateName} in States.");
       }
 
       FinalizePreviousActions();
@@ -134,11 +137,11 @@ namespace FSM
     {
       if (_BuildState == null) // from In
       {
-        throw new InvalidOperationException("Unknown build state. Use In() first.");
+        throw new InvalidOperationException($"Unknown build state for [{stateName}]. Use In() first.");
       }
       if (_BuildEvent == null) // from On
       {
-        throw new InvalidOperationException("Unknown Event Name. Use On() first.");
+        throw new InvalidOperationException($"Unknown Event for Goto({stateName}) in State [{_BuildState.Name}]. Use On() first.");
       }
 
       var newState = _States[stateName];
@@ -151,6 +154,29 @@ namespace FSM
 
       return this;
     }
+
+    public FSM47<StateEnum, EventEnum> Do(StateAction stateAction)
+    {
+      if (_BuildState == null) // from In
+      {
+        throw new InvalidOperationException($"Unknown build state for [{stateAction.Method}]. Use In() first.");
+      }
+      if (_BuildEvent == null) // from On
+      {
+        throw new InvalidOperationException($"Unknown Event for Goto({stateAction.Method}) in State [{_BuildState.Name}]. Use On() first.");
+      }
+
+      //_BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, _BuildEvent, newState);
+      _BuildDo = new FSMDo<StateEnum, EventEnum>(_BuildState, _BuildEvent, stateAction);
+      ActionKey key = new ActionKey() { SourceStateID = _BuildState.ID, SourceEventID = _BuildEvent.ID };
+      //_Actions.Add(key, _BuildAction);
+      _Do.Add(key, _BuildDo);
+
+      _BuildEvent = null;
+
+      return this;
+    }
+
 
     public FSM47<StateEnum, EventEnum> Go(StateEnum stateName)
     {
@@ -178,7 +204,7 @@ namespace FSM
     {
       if (!_States.ContainsKey(stateName))
       {
-        throw new ArgumentException(string.Format("Statename key doesn't exist: {0}", stateName));
+        throw new ArgumentException($"Statename key doesn't exist: {stateName}");
       }
 
       _BuildState = _States[stateName];
@@ -190,7 +216,7 @@ namespace FSM
     {
       if (!_Events.ContainsKey(eventName))
       {
-        throw new InvalidOperationException("Event named " + eventName + " not declared in class constructor.");
+        throw new InvalidOperationException($"Event named {eventName} not declared in class constructor.");
       }
 
       _BuildEvent = _Events[eventName];
@@ -219,14 +245,27 @@ namespace FSM
     {
       if (!_Events.ContainsKey(eventType))
       {
-        throw new InvalidOperationException(string.Format("Event list is missing: {0}", eventType));
+        throw new InvalidOperationException($"Event list is missing: {eventType}");
       }
       if (_isInAction)
       {
-        throw new InvalidOperationException(string.Format("Cannot start a new Act '{0}' when already evaluating '{1}' -- QueueAct() it instead", eventType, _isInActionName));
+        throw new InvalidOperationException(
+          $"Cannot start a new Act '{eventType}' when already evaluating '{_isInActionName}' -- QueueAct() it instead");
       }
 
       var fsmEvent = _Events[eventType];
+
+      bool isDo = false;
+      foreach (var key in _Do.Keys)
+      {
+        if (key.SourceStateID == _CurrentState.ID && key.SourceEventID == fsmEvent.ID)
+        {
+          _Do[key].Action();
+          isDo = true;
+        }
+      }
+
+      if (isDo) return;
 
       _isInAction = true;
       _isInActionName = fsmEvent.Name;
