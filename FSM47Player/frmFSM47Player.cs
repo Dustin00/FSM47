@@ -12,21 +12,21 @@ namespace FSM47Player
     private FSM47<States, FsmEvents> _StateManager = null;
 
     public enum States
-		{
+    {
       None,
       Stopped,
       Playing,
       Paused,
       Forwarding,
       Reversing
-		}
+    }
 
     public enum FsmEvents // Events already exists in too many .NET libraries, so I used this instead
     {
       Stop,
       Play,
       Pause,
-      Next, 
+      Next,
       Last,
       OtherThing // Used to show .On(event).Do(SomeAction), but is never actually called by any .Act(event) used in this example
     }
@@ -137,9 +137,9 @@ namespace FSM47Player
     }
 
     private void PlayOtherThing()
-		{
+    {
       // This is called by the FSMDo(Action) to show it in code, but is not implemented to do anything in this sample app
-		}
+    }
 
     private void PlayEnterEvent()
     {
