@@ -38,7 +38,8 @@ Demo project has example notes in frmFSM47Player.cs
 	  Playing,
 	  Paused,
 	  Forwarding,
-	  Reversing
+      Reversing,
+      SubClearing // For Substates, I use the convention of "Sub" at the start of the name
     }
 
     public enum FsmEvents // Events already exists in too many .NET libraries, so I used this instead
@@ -47,7 +48,10 @@ Demo project has example notes in frmFSM47Player.cs
 	  Play,
 	  Pause,
 	  Next, 
-	  Last
+      Last,
+      ClearConsole,
+      OK,
+      OtherThing // Used to show .On(event).Do(SomeAction), but is never actually called by any .Act(event) used in this example
     }
 
     public frmFSM47Player()
@@ -55,7 +59,7 @@ Demo project has example notes in frmFSM47Player.cs
       InitializeComponent();
 
       _StateManager = new FSM47<States, FsmEvents>(States.None) // unspecified starting state makes None the default
-        .In(States.None) // For the starting state, both EntryAction() and Go() will be triggered when you call FSM.Begin()
+        .In(States.None) // For the starting state, Go() will be triggered when you call .Begin()
           .Go(States.Stopped) // this demo only has a Go(), though
           .ExitAction(EnablePlayer); // will happen when you exit this state
 
@@ -64,6 +68,10 @@ Demo project has example notes in frmFSM47Player.cs
           .EntryAction(StopEnterEvent)
           .ExitAction(StopExitEvent)
           .On(FsmEvents.Play).Goto(States.Playing)
+          // You can jump to the SubClearing from multiple states.
+          // You then use SubReturn to exit that Substate and return to whatever state you came from
+          // In this example, you can Clear from Stopped, Playing, and Paused
+          .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
         .In(States.Playing)
           .EntryAction(PlayEnterEvent)
           .ExitAction(PlayExitEvent)
@@ -71,17 +79,23 @@ Demo project has example notes in frmFSM47Player.cs
           .On(FsmEvents.Pause).Goto(States.Paused)
           .On(FsmEvents.Next).Goto(States.Forwarding)
           .On(FsmEvents.Last).Goto(States.Reversing)
+          .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
+          .On(FsmEvents.OtherThing).Do(PlayOtherThing) // Invoking a method instead of changing state
         .In(States.Paused)
           .EntryAction(PauseEnterEvent)
           .ExitAction(PauseExitEvent)
           .On(FsmEvents.Stop).Goto(States.Stopped)
           .On(FsmEvents.Play).Goto(States.Playing)
+          .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
         .In(States.Forwarding)
           .EntryAction(NextEvent)
           .Go(States.Playing)
         .In(States.Reversing)
           .EntryAction(LastEvent)
           .Go(States.Playing)
+        .In(States.SubClearing)
+          .EntryAction(OnClearConsole)
+          .On(FsmEvents.OK).SubReturn() // SubReturn takes you back to whatever State you called .GoSub from
 
         .Build(); // finalize building FSM
 

@@ -18,7 +18,8 @@ namespace FSM47Player
       Playing,
       Paused,
       Forwarding,
-      Reversing
+      Reversing,
+      SubClearing // For Substates, I use the convention of "Sub" at the start of the name
     }
 
     public enum FsmEvents // Events already exists in too many .NET libraries, so I used this instead
@@ -28,6 +29,8 @@ namespace FSM47Player
       Pause,
       Next,
       Last,
+      ClearConsole,
+      OK,
       OtherThing // Used to show .On(event).Do(SomeAction), but is never actually called by any .Act(event) used in this example
     }
 
@@ -36,7 +39,7 @@ namespace FSM47Player
       InitializeComponent();
 
       _StateManager = new FSM47<States, FsmEvents>(States.None) // must specify starting state
-        .In(States.None) // For the starting state, Go() will be triggered when you call FSM.Begin()
+        .In(States.None) // For the starting state, Go() will be triggered when you call .Begin()
           .Go(States.Stopped) // this demo only has a Go(), though
           .ExitAction(EnablePlayer); // will happen when you exit this state
 
@@ -45,6 +48,10 @@ namespace FSM47Player
           .EntryAction(StopEnterEvent)
           .ExitAction(StopExitEvent)
           .On(FsmEvents.Play).Goto(States.Playing)
+          // You can jump to the SubClearing from multiple states.
+          // You then use SubReturn to exit that Substate and return to whatever state you came from
+          // In this example, you can Clear from Stopped, Playing, and Paused
+          .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
         .In(States.Playing)
           .EntryAction(PlayEnterEvent)
           .ExitAction(PlayExitEvent)
@@ -52,18 +59,23 @@ namespace FSM47Player
           .On(FsmEvents.Pause).Goto(States.Paused)
           .On(FsmEvents.Next).Goto(States.Forwarding)
           .On(FsmEvents.Last).Goto(States.Reversing)
-          .On(FsmEvents.OtherThing).Do(PlayOtherThing) // Connecting an event to a Do(Action) that doesn't change state
+          .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
+          .On(FsmEvents.OtherThing).Do(PlayOtherThing) // Invoking a method instead of changing state
         .In(States.Paused)
           .EntryAction(PauseEnterEvent)
           .ExitAction(PauseExitEvent)
           .On(FsmEvents.Stop).Goto(States.Stopped)
           .On(FsmEvents.Play).Goto(States.Playing)
+          .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
         .In(States.Forwarding)
           .EntryAction(NextEvent)
           .Go(States.Playing)
         .In(States.Reversing)
           .EntryAction(LastEvent)
           .Go(States.Playing)
+        .In(States.SubClearing)
+          .EntryAction(OnClearConsole)
+          .On(FsmEvents.OK).SubReturn() // SubReturn takes you back to whatever State you called .GoSub from
 
         .Build(); // finalize building FSM
 
@@ -115,7 +127,16 @@ namespace FSM47Player
 
     private void btnClearConsole_Click(object sender, EventArgs e)
     {
+      _StateManager.Act(FsmEvents.ClearConsole);
+    }
+
+    private void OnClearConsole()
+    {
       lstConsole.Items.Clear();
+
+      // Because this is invoked by entering a State EntryAction, you are "in flight" of processing an Action
+      // So instead of .Act, you must use .QueueAct to indicate the next action
+      _StateManager.QueueAct(FsmEvents.OK);
     }
 
     private void StopEnterEvent()

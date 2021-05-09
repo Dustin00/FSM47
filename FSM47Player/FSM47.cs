@@ -14,6 +14,13 @@ using System.Collections.Generic;
 
 namespace FSM
 {
+  public enum EventStyle
+  {
+    Standard,
+    GoSub,
+    Return
+  }
+
   public class FSM47<StateEnum, EventEnum>
     where StateEnum : Enum
     where EventEnum : Enum
@@ -24,6 +31,7 @@ namespace FSM
     FSMEvent<EventEnum> _BuildEvent = null;
     Dictionary<StateEnum, FSMState<StateEnum>> _States = null;
     FSMState<StateEnum> _BuildState = null;
+    private Queue<FSMState<StateEnum>> _SubStateHistory = new Queue<FSMState<StateEnum>>();
     FSMAction<StateEnum, EventEnum> _BuildAction = null;
     FSMDo<StateEnum, EventEnum> _BuildDo = null;
     private Dictionary<ActionKey, FSMAction<StateEnum, EventEnum>> _Actions = null;
@@ -133,7 +141,7 @@ namespace FSM
       return this;
     }
 
-    public FSM47<StateEnum, EventEnum> Goto(StateEnum stateName)
+    public FSM47<StateEnum, EventEnum> Goto(StateEnum stateName, EventStyle eventStyle = EventStyle.Standard)
     {
       if (_BuildState == null) // from In
       {
@@ -146,7 +154,45 @@ namespace FSM
 
       var newState = _States[stateName];
 
-      _BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, _BuildEvent, newState);
+      _BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, _BuildEvent, newState, eventStyle);
+      ActionKey key = new ActionKey() { SourceStateID = _BuildState.ID, SourceEventID = _BuildEvent.ID };
+      _Actions.Add(key, _BuildAction);
+
+      _BuildEvent = null;
+
+      return this;
+    }
+
+    public FSM47<StateEnum, EventEnum> GoSub(StateEnum state)
+    {
+      if (!_States.ContainsKey(state))
+      {
+        throw new InvalidOperationException("Unknown build state. Use In() first.");
+      }
+
+      // add the Goto to the state we can GoSub to
+      Goto(state, EventStyle.GoSub);
+
+      // // then add the return event for destination state to return to this state
+      // var stashState = _BuildState;
+      // _BuildState = _States[stateName];
+      // Goto(stashState.Name, StateEventType.Return);
+
+      return this;
+    }
+
+    public FSM47<StateEnum, EventEnum> SubReturn()
+    {
+      if (_BuildState == null) // from In
+      {
+        throw new InvalidOperationException("Unknown build state. Use In() first.");
+      }
+      if (_BuildEvent == null) // from On
+      {
+        throw new InvalidOperationException("Unknown Event Name. Use On() first.");
+      }
+
+      _BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, _BuildEvent, null, EventStyle.Return);
       ActionKey key = new ActionKey() { SourceStateID = _BuildState.ID, SourceEventID = _BuildEvent.ID };
       _Actions.Add(key, _BuildAction);
 
@@ -191,7 +237,7 @@ namespace FSM
 
       var newState = _States[stateName];
 
-      _BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, null, newState);
+      _BuildAction = new FSMAction<StateEnum, EventEnum>(_BuildState, null, newState, EventStyle.Standard);
       ActionKey key = new ActionKey() { SourceStateID = _BuildState.ID, SourceEventID = INSTANT_ACTION };
       _Actions.Add(key, _BuildAction);
 
@@ -287,7 +333,24 @@ namespace FSM
 
       ExitState();
 
-      EnterState(transition.FinalState);
+      FSMState<StateEnum> finalState;
+      switch (transition.StateEventType())
+      {
+        case EventStyle.GoSub:
+          _SubStateHistory.Enqueue(_CurrentState);
+          finalState = transition.FinalState;
+          break;
+        case EventStyle.Return:
+          finalState = _SubStateHistory.Dequeue();
+          break;
+        case EventStyle.Standard:
+          finalState = transition.FinalState;
+          break;
+        default:
+          throw new InvalidOperationException($"Unknown StateEventType: {transition.StateEventType()}");
+      }
+
+      EnterState(finalState);
 
       FinishAct();
     }
