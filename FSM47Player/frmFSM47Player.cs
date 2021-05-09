@@ -45,16 +45,16 @@ namespace FSM47Player
 
       _StateManager // optionally, you can leave this out and chain all state construction together, including Begin()
         .In(States.Stopped)
-          .EntryAction(StopEnterEvent)
-          .ExitAction(StopExitEvent)
+          .EntryAction(OnStopEnter)
+          .ExitAction(OnStopExit)
           .On(FsmEvents.Play).Goto(States.Playing)
           // You can jump to the SubClearing from multiple states.
           // You then use SubReturn to exit that Substate and return to whatever state you came from
           // In this example, you can Clear from Stopped, Playing, and Paused
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
         .In(States.Playing)
-          .EntryAction(PlayEnterEvent)
-          .ExitAction(PlayExitEvent)
+          .EntryAction(OnPlayEnter)
+          .ExitAction(OnPlayExit)
           .On(FsmEvents.Stop).Goto(States.Stopped)
           .On(FsmEvents.Pause).Goto(States.Paused)
           .On(FsmEvents.Next).Goto(States.Forwarding)
@@ -62,19 +62,19 @@ namespace FSM47Player
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
           .On(FsmEvents.OtherThing).Do(PlayOtherThing) // Invoking a method instead of changing state
         .In(States.Paused)
-          .EntryAction(PauseEnterEvent)
-          .ExitAction(PauseExitEvent)
+          .EntryAction(OnPauseEnter)
+          .ExitAction(OnPauseExit)
           .On(FsmEvents.Stop).Goto(States.Stopped)
           .On(FsmEvents.Play).Goto(States.Playing)
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
         .In(States.Forwarding)
-          .EntryAction(NextEvent)
+          .EntryAction(OnForwardingEnter)
           .Go(States.Playing)
         .In(States.Reversing)
-          .EntryAction(LastEvent)
+          .EntryAction(OnReversingEnter)
           .Go(States.Playing)
         .In(States.SubClearing)
-          .EntryAction(OnClearConsole)
+          .EntryAction(OnSubClearingEnter)
           .On(FsmEvents.OK).SubReturn() // SubReturn takes you back to whatever State you called .GoSub from
 
         .Build(); // finalize building FSM
@@ -130,7 +130,7 @@ namespace FSM47Player
       _StateManager.Act(FsmEvents.ClearConsole);
     }
 
-    private void OnClearConsole()
+    private void OnSubClearingEnter()
     {
       lstConsole.Items.Clear();
 
@@ -139,7 +139,7 @@ namespace FSM47Player
       _StateManager.QueueAct(FsmEvents.OK);
     }
 
-    private void StopEnterEvent()
+    private void OnStopEnter()
     {
       lstConsole.Items.Add("Enter Stopped");
       txtState.Text = "Stopped";
@@ -151,7 +151,7 @@ namespace FSM47Player
       btnNext.Enabled = false;
     }
 
-    private void StopExitEvent()
+    private void OnStopExit()
     {
       lstConsole.Items.Add("Exit Stopped");
       btnPlay.Enabled = false;
@@ -162,7 +162,7 @@ namespace FSM47Player
       // This is called by the FSMDo(Action) to show it in code, but is not implemented to do anything in this sample app
     }
 
-    private void PlayEnterEvent()
+    private void OnPlayEnter()
     {
       if (-1 == lstTracks.SelectedIndex)
       {
@@ -176,7 +176,7 @@ namespace FSM47Player
       btnLast.Enabled = true;
     }
 
-    private void PlayExitEvent()
+    private void OnPlayExit()
     {
       lstConsole.Items.Add("Exit Playing");
       btnStop.Enabled = false;
@@ -185,7 +185,7 @@ namespace FSM47Player
       btnLast.Enabled = false;
     }
 
-    private void PauseEnterEvent()
+    private void OnPauseEnter()
     {
       lstConsole.Items.Add("Enter Paused");
       txtState.Text = "Paused";
@@ -193,14 +193,14 @@ namespace FSM47Player
       btnPlay.Enabled = true;
     }
 
-    private void PauseExitEvent()
+    private void OnPauseExit()
     {
       lstConsole.Items.Add("Exit Paused");
       btnStop.Enabled = false;
       btnPlay.Enabled = false;
     }
 
-    private void LastEvent()
+    private void OnReversingEnter()
     {
       lstConsole.Items.Add("Previous Track");
       if (lstTracks.SelectedIndex > 0)
@@ -214,7 +214,7 @@ namespace FSM47Player
       }
     }
 
-    private void NextEvent()
+    private void OnForwardingEnter()
     {
       lstConsole.Items.Add("Next Track");
       if (lstTracks.SelectedIndex < lstTracks.Items.Count - 1)
