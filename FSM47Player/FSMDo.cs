@@ -8,31 +8,25 @@ namespace FSM
 	{
 		private FSMState<StateEnum> _InitialState;
 		private FSMEvent<EventEnum> _Event;
-		private StateAction _StateAction;
+		private Action<string> _StateAction;
+		private bool _IsWithJson;
 
-		public FSMDo(FSMState<StateEnum> initialState, FSMEvent<EventEnum> fsmEvent, StateAction stateAction)
+		public FSMDo(FSMState<StateEnum> initialState, 
+			FSMEvent<EventEnum> fsmEvent, 
+			Action<string> stateAction,
+			bool isWithJson)
 		{
 			_InitialState = initialState;
 			_Event = fsmEvent;
 			_StateAction = stateAction;
+			_IsWithJson = isWithJson;
 		}
 
-		public override string ToString()
-		{
-			return $"{_InitialState.Name} does {_StateAction}";
-		}
+		public override string ToString() => $"{_InitialState.Name} does {_StateAction} isWithJson: {_IsWithJson}";
 
-		public FSMState<StateEnum> InitialState
-		{
-			get { return _InitialState; }
-		}
-		public FSMEvent<EventEnum> Event
-		{
-			get { return _Event; }
-		}
-		public StateAction Action
-		{
-			get { return _StateAction; }
-		}
+		public FSMState<StateEnum> InitialState => _InitialState;
+		public FSMEvent<EventEnum> Event => _Event;
+		public bool IsWithJson => _IsWithJson;
+		public Action<string> Action => _StateAction;
 	}
 }

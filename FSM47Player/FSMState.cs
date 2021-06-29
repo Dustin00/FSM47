@@ -15,40 +15,21 @@ namespace FSM
       _ID = _Name.ToString().GetDeterministicHashCode();
     }
 
-    public StateEnum Name
+    public StateEnum Name => _Name;
+
+    public int ID => _ID;
+
+    private List<WithJsonAction> _EntryAction = new List<WithJsonAction>();
+    public List<WithJsonAction> EntryAction => _EntryAction;
+
+    public void AddEntryAction(Action<string> action, bool isWithJson)
     {
-      get
-      {
-        return _Name;
-      }
+      _EntryAction.Add(new WithJsonAction() { Action = action, isWithJson = isWithJson});
     }
 
-    public int ID
-    {
-      get
-      {
-        return _ID;
-      }
-    }
+    private List<Action> _ExitAction = new List<Action>();
+    public List<Action> ExitAction => _ExitAction;
 
-    private List<StateAction> _EntryAction = new List<StateAction>();
-    public List<StateAction> EntryAction
-    {
-      get { return _EntryAction; }
-    }
-    public void AddEntryAction(StateAction action)
-    {
-      _EntryAction.Add(action);
-    }
-
-    private List<StateAction> _ExitAction = new List<StateAction>();
-    public List<StateAction> ExitAction
-    {
-      get { return _ExitAction; }
-    }
-    public void AddExitAction(StateAction action)
-    {
-      _ExitAction.Add(action);
-    }
+    public void AddExitAction(Action action) => _ExitAction.Add(action);
   }
 }

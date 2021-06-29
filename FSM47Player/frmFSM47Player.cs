@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Text.Json;
 using FSM;
 
 /// A demonstration of the FSM47 library
@@ -19,6 +20,7 @@ namespace FSM47Player
       Paused,
       Forwarding,
       Reversing,
+      UpdateVolume,
       SubClearing // For Substates, I use the convention of "Sub" at the start of the name
     }
 
@@ -29,6 +31,7 @@ namespace FSM47Player
       Pause,
       Next,
       Last,
+      SetVolume,
       ClearConsole,
       OK,
       OtherThing // Used to show .On(event).Do(SomeAction), but is never actually called by any .Act(event) used in this example
@@ -52,6 +55,7 @@ namespace FSM47Player
           // You then use SubReturn to exit that Substate and return to whatever state you came from
           // In this example, you can Clear from Stopped, Playing, and Paused
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
+          .On(FsmEvents.SetVolume).WithJson().GoSub(States.UpdateVolume)
         .In(States.Playing)
           .EntryAction(OnPlayEnter)
           .ExitAction(OnPlayExit)
@@ -61,18 +65,23 @@ namespace FSM47Player
           .On(FsmEvents.Last).Goto(States.Reversing)
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
           .On(FsmEvents.OtherThing).Do(PlayOtherThing) // Invoking a method instead of changing state
+          .On(FsmEvents.SetVolume).WithJson().Do(DoUpdateVolume) // Alternately: can pass in a json object here, too
         .In(States.Paused)
           .EntryAction(OnPauseEnter)
           .ExitAction(OnPauseExit)
           .On(FsmEvents.Stop).Goto(States.Stopped)
           .On(FsmEvents.Play).Goto(States.Playing)
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
+          .On(FsmEvents.SetVolume).WithJson().GoSub(States.UpdateVolume)
         .In(States.Forwarding)
           .EntryAction(OnForwardingEnter)
           .Go(States.Playing)
         .In(States.Reversing)
           .EntryAction(OnReversingEnter)
           .Go(States.Playing)
+        .In(States.UpdateVolume).NeedParameters()
+          .EntryAction(OnUpdateVolume)
+          .On(FsmEvents.OK).SubReturn()
         .In(States.SubClearing)
           .EntryAction(OnSubClearingEnter)
           .On(FsmEvents.OK).SubReturn() // SubReturn takes you back to whatever State you called .GoSub from
@@ -108,6 +117,34 @@ namespace FSM47Player
     private void btnPlay_Click(object sender, EventArgs e)
     {
       _StateManager.Act(FsmEvents.Play);
+    }
+
+    private void btnVolume0_Click(object sender, EventArgs e)
+    {
+      SetVolume(0);
+    }
+
+    private void btnVolume33_Click(object sender, EventArgs e)
+    {
+      SetVolume(33);
+    }
+    
+    private void btnVolume66_Click(object sender, EventArgs e)
+    {
+      SetVolume(66);
+    }
+    
+    private void btnVolume100_Click(object sender, EventArgs e)
+    {
+      SetVolume(100);
+    }
+
+    private void SetVolume(int amount)
+    {
+      VolumeJson volumeJson = new VolumeJson() {Amount = amount};
+      string json = JsonSerializer.Serialize(volumeJson);
+      //_StateManager.Act(FsmEvents.SetVolume); // As this is marked WithJson, this will cause a runtime error 
+      _StateManager.Act(FsmEvents.SetVolume, json);
     }
 
     private void btnPause_Click(object sender, EventArgs e)
@@ -200,6 +237,23 @@ namespace FSM47Player
       btnPlay.Enabled = false;
     }
 
+    private void OnUpdateVolume(string json)
+    {
+      UpdateVolume(json);
+      _StateManager.QueueAct(FsmEvents.OK);
+    }
+    
+    private void DoUpdateVolume(string json)
+    {
+      UpdateVolume(json);
+    }
+
+    private void UpdateVolume(string json)
+    {
+      var volumeJson = JsonSerializer.Deserialize<VolumeJson>(json);
+      lstConsole.Items.Add($"Volume set to: {volumeJson.Amount}");
+    }
+    
     private void OnReversingEnter()
     {
       lstConsole.Items.Add("Previous Track");

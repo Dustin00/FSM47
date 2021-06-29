@@ -1,10 +1,29 @@
-## Welcome to FSM47
+# Welcome to FSM47
 
 A simple Finite State Manager that uses .NET Framework 4.7
 
 Library notes are mostly in FSM47.cs
 
 Demo project has example notes in frmFSM47Player.cs
+
+### Support
+States, Events, Act() to invoke an Event, EntryActions and ExitActions.
+
+### Goto and GoSub event support
+You can use a standard "goto" style event flow, or a "gosub" to a state that you can then "SubReturn" back to the previous state.
+
+### Event Paremters
+You can declare an event that takes a parameter. To support any type of parameter this uses a json string for all event parameters.
+
+Because of the json serialize/deserialize work, I would not recommend passing parameters for a high-volume event.
+
+### EntryActions and ExitActions
+EntryActions happen upon entering a State and can take json parameters and are triggered in order as specified in your constructor.
+
+ExitActions happen when you leave a State and cannot take parameters.
+
+### Of Note
+After constructing your state machine, you can add more state/event combinations all you like. There is no way to remove.
 
 ## Add to your project
 
@@ -20,7 +39,6 @@ Demo project has example notes in frmFSM47Player.cs
 
 ## Possible TODOs
 
-* Parameters for Actions
 * Gated On/Goto:
 	On(Event).If(test).Goto(State)
 	But then I'll need a better example app
@@ -72,6 +90,8 @@ Demo project has example notes in frmFSM47Player.cs
           // You then use SubReturn to exit that Substate and return to whatever state you came from
           // In this example, you can Clear from Stopped, Playing, and Paused
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
+		  // This indicates you will pass a json parameter with your event:
+          .On(FsmEvents.SetVolume).WithJson().GoSub(States.UpdateVolume) // .Act(FsmEvents.SetVolume, jsonData)
         .In(States.Playing)
           .EntryAction(PlayEnterEvent)
           .ExitAction(PlayExitEvent)
@@ -81,18 +101,23 @@ Demo project has example notes in frmFSM47Player.cs
           .On(FsmEvents.Last).Goto(States.Reversing)
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
           .On(FsmEvents.OtherThing).Do(PlayOtherThing) // Invoking a method instead of changing state
+		  .On(FsmEvents.SetVolume).WithJson().Do(DoUpdateVolume) // Alternate json parameter support: can pass in a json object here, too
         .In(States.Paused)
           .EntryAction(PauseEnterEvent)
           .ExitAction(PauseExitEvent)
           .On(FsmEvents.Stop).Goto(States.Stopped)
           .On(FsmEvents.Play).Goto(States.Playing)
           .On(FsmEvents.ClearConsole).GoSub(States.SubClearing)
+		  .On(FsmEvents.SetVolume).WithJson().GoSub(States.UpdateVolume)
         .In(States.Forwarding)
           .EntryAction(NextEvent)
           .Go(States.Playing)
         .In(States.Reversing)
           .EntryAction(LastEvent)
           .Go(States.Playing)
+        .In(States.UpdateVolume).NeedParameters() // State knows a json parameter is needed
+          .EntryAction(OnUpdateVolume)
+          .On(FsmEvents.OK).SubReturn()
         .In(States.SubClearing)
           .EntryAction(OnClearConsole)
           .On(FsmEvents.OK).SubReturn() // SubReturn takes you back to whatever State you called .GoSub from

@@ -36,6 +36,10 @@
 			this.btnPause = new System.Windows.Forms.Button();
 			this.btnPlay = new System.Windows.Forms.Button();
 			this.btnStop = new System.Windows.Forms.Button();
+			this.btnVolume0 = new System.Windows.Forms.Button();
+			this.btnVolume33 = new System.Windows.Forms.Button();
+			this.btnVolume66 = new System.Windows.Forms.Button();
+			this.btnVolume100 = new System.Windows.Forms.Button();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.lstTracks = new System.Windows.Forms.ListBox();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -55,6 +59,10 @@
 			this.pnlControls.Controls.Add(this.btnPause);
 			this.pnlControls.Controls.Add(this.btnPlay);
 			this.pnlControls.Controls.Add(this.btnStop);
+			this.pnlControls.Controls.Add(this.btnVolume0);
+			this.pnlControls.Controls.Add(this.btnVolume33);
+			this.pnlControls.Controls.Add(this.btnVolume66);
+			this.pnlControls.Controls.Add(this.btnVolume100);
 			this.pnlControls.Enabled = false;
 			this.pnlControls.Location = new System.Drawing.Point(17, 16);
 			this.pnlControls.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
@@ -130,6 +138,50 @@
 			this.btnPlay.Text = "Play >";
 			this.btnPlay.UseVisualStyleBackColor = true;
 			this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click);
+			// 
+			// btnVolume0
+			// 
+			this.btnVolume0.Location = new System.Drawing.Point(9, 250);
+			this.btnVolume0.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.btnVolume0.Name = "btnVolume0";
+			this.btnVolume0.Size = new System.Drawing.Size(100, 28);
+			this.btnVolume0.TabIndex = 10;
+			this.btnVolume0.Text = "Volume 0";
+			this.btnVolume0.UseVisualStyleBackColor = true;
+			this.btnVolume0.Click += new System.EventHandler(this.btnVolume0_Click);
+			// 
+			// btnVolume33
+			// 
+			this.btnVolume33.Location = new System.Drawing.Point(9, 280);
+			this.btnVolume33.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.btnVolume33.Name = "btnVolume33";
+			this.btnVolume33.Size = new System.Drawing.Size(100, 28);
+			this.btnVolume33.TabIndex = 10;
+			this.btnVolume33.Text = "Volume 33";
+			this.btnVolume33.UseVisualStyleBackColor = true;
+			this.btnVolume33.Click += new System.EventHandler(this.btnVolume33_Click);
+			// 
+			// btnVolume66
+			// 
+			this.btnVolume66.Location = new System.Drawing.Point(9, 310);
+			this.btnVolume66.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.btnVolume66.Name = "btnVolume66";
+			this.btnVolume66.Size = new System.Drawing.Size(100, 28);
+			this.btnVolume66.TabIndex = 10;
+			this.btnVolume66.Text = "Volume 66";
+			this.btnVolume66.UseVisualStyleBackColor = true;
+			this.btnVolume66.Click += new System.EventHandler(this.btnVolume66_Click);
+			// 
+			// btnVolume100
+			// 
+			this.btnVolume100.Location = new System.Drawing.Point(9, 340);
+			this.btnVolume100.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.btnVolume100.Name = "btnVolume100";
+			this.btnVolume100.Size = new System.Drawing.Size(100, 28);
+			this.btnVolume100.TabIndex = 13;
+			this.btnVolume100.Text = "Volume 100";
+			this.btnVolume100.UseVisualStyleBackColor = true;
+			this.btnVolume100.Click += new System.EventHandler(this.btnVolume100_Click);
 			// 
 			// btnStop
 			// 
@@ -228,6 +280,10 @@
         private System.Windows.Forms.Button btnPause;
         private System.Windows.Forms.Button btnPlay;
         private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.Button btnVolume0;
+        private System.Windows.Forms.Button btnVolume33;
+        private System.Windows.Forms.Button btnVolume66;
+        private System.Windows.Forms.Button btnVolume100;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.ListBox lstTracks;
         private System.Windows.Forms.GroupBox groupBox3;
