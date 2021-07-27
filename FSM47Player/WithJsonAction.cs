@@ -4,7 +4,7 @@ namespace FSM
 {
 	public class WithJsonAction
 	{
-		public Action<string> Action;
+		public Action<string, string> Action;
 		public bool isWithJson;
 	}
 }

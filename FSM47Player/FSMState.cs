@@ -22,7 +22,7 @@ namespace FSM
     private List<WithJsonAction> _EntryAction = new List<WithJsonAction>();
     public List<WithJsonAction> EntryAction => _EntryAction;
 
-    public void AddEntryAction(Action<string> action, bool isWithJson)
+    public void AddEntryAction(Action<string, string> action, bool isWithJson)
     {
       _EntryAction.Add(new WithJsonAction() { Action = action, isWithJson = isWithJson});
     }

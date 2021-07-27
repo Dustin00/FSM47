@@ -8,12 +8,12 @@ namespace FSM
 	{
 		private FSMState<StateEnum> _InitialState;
 		private FSMEvent<EventEnum> _Event;
-		private Action<string> _StateAction;
+		private Action<string, string> _StateAction;
 		private bool _IsWithJson;
 
 		public FSMDo(FSMState<StateEnum> initialState, 
 			FSMEvent<EventEnum> fsmEvent, 
-			Action<string> stateAction,
+			Action<string, string> stateAction,
 			bool isWithJson)
 		{
 			_InitialState = initialState;
@@ -27,6 +27,6 @@ namespace FSM
 		public FSMState<StateEnum> InitialState => _InitialState;
 		public FSMEvent<EventEnum> Event => _Event;
 		public bool IsWithJson => _IsWithJson;
-		public Action<string> Action => _StateAction;
+		public Action<string, string> Action => _StateAction;
 	}
 }

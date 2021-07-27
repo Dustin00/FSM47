@@ -37,7 +37,7 @@ namespace FSM
     private Dictionary<ActionKey, FSMAction<StateEnum, EventEnum>> _Actions = null;
     private Dictionary<ActionKey, FSMDo<StateEnum, EventEnum>> _Do = null;
     FSMState<StateEnum> _CurrentState = null;
-    private List<Action<string>> _EntryAction = null;
+    private List<Action<string, string>> _EntryAction = null;
     private List<Action> _ExitAction = null;
     private static Queue<EventEnum> _Queue = new Queue<EventEnum>();
     private bool _IsInAction = false;
@@ -75,7 +75,7 @@ namespace FSM
         _Events.Add(eventName, newEvent);
       }
 
-      _EntryAction = new List<Action<string>>();
+      _EntryAction = new List<Action<string, string>>();
       _ExitAction = new List<Action>();
     }
 
@@ -103,7 +103,7 @@ namespace FSM
 
     public FSM47<StateEnum, EventEnum> Begin()
     {
-      CheckForInstantAction(String.Empty);
+      CheckForInstantAction(String.Empty, String.Empty);
 
       return this;
     }
@@ -214,12 +214,12 @@ namespace FSM
 
     public FSM47<StateEnum, EventEnum> Do(Action action)
     {
-      void StringAction(string s) => action();
+      void StringAction(string name, string json) => action();
       Do(StringAction);
       return this;
     }
 
-    public FSM47<StateEnum, EventEnum> Do(Action<string> stateAction)
+    public FSM47<StateEnum, EventEnum> Do(Action<string, string> stateAction)
     {
       if (_BuildState == null) // from In
       {
@@ -296,12 +296,12 @@ namespace FSM
 
     public FSM47<StateEnum, EventEnum> EntryAction(Action action)
     {
-      void StringAction(string s) => action();
+      void StringAction(string className, string json) => action();
       _EntryAction.Add(StringAction);
       return this;
     }
 
-    public FSM47<StateEnum, EventEnum> EntryAction(Action<string> action)
+    public FSM47<StateEnum, EventEnum> EntryAction(Action<string, string> action)
     {
       _EntryAction.Add(action);
       return this;
@@ -318,7 +318,7 @@ namespace FSM
       _Queue.Enqueue(eventType);
     }
 
-    public void Act(EventEnum eventType, string json = "")
+    public void Act(EventEnum eventType, string className = "", string json = "")
     {
       if (!_Events.ContainsKey(eventType))
       {
@@ -337,9 +337,11 @@ namespace FSM
       {
         if (key.SourceStateID == _CurrentState.ID && key.SourceEventID == fsmEvent.ID)
         {
+          if (_Do[key].IsWithJson && className == string.Empty)
+            throw new InvalidOperationException($"Act '{eventType}' requires a className string, but was given none.");
           if (_Do[key].IsWithJson && json == string.Empty)
-            throw new InvalidOperationException($"Act '{eventType}' requires a json object, but was given none.");
-          _Do[key].Action(json);
+            throw new InvalidOperationException($"Act '{eventType}' requires a json string, but was given none.");
+          _Do[key].Action(className, json);
           isDo = true;
         }
       }
@@ -387,7 +389,7 @@ namespace FSM
           throw new InvalidOperationException($"Unknown StateEventType: {transition.StateEventType()}");
       }
 
-      EnterState(finalState, json);
+      EnterState(finalState, className, json);
 
       FinishAct();
     }
@@ -414,28 +416,31 @@ namespace FSM
       }
     }
 
-    private void EnterState(FSMState<StateEnum> nextState, string json)
+    private void EnterState(FSMState<StateEnum> nextState, string className, string json)
     {
       if (nextState.EntryAction != null)
       {
         foreach (var action in nextState.EntryAction)
         {
           if (action.isWithJson && json == string.Empty)
-            throw new InvalidOperationException($"Act '{action.Action}' requires a json object, but was given none.");
+            throw new InvalidOperationException($"Act '{action.Action}' requires a json string, but was given none.");
+
+          if (action.isWithJson && className == string.Empty)
+            throw new InvalidOperationException($"Act '{action.Action}' requires a className string, but was given none.");
 
           if (!action.isWithJson && json != string.Empty)
             throw new InvalidOperationException($"Act '{action.Action}' is not expecting a json object, but was given: {json}");
 
-          action.Action(json);
+          action.Action(className, json);
         }
       }
 
       _CurrentState = nextState;
 
-      CheckForInstantAction(json);
+      CheckForInstantAction(className, json);
     }
 
-    private void CheckForInstantAction(string json)
+    private void CheckForInstantAction(string className, string json)
     {
       FSMAction<StateEnum, EventEnum> instantAction = null;
       foreach (var key in _Actions.Keys)
@@ -451,7 +456,7 @@ namespace FSM
         return;
 
       ExitState();
-      EnterState(instantAction.FinalState, json);
+      EnterState(instantAction.FinalState, className, json);
     }
   }
 }

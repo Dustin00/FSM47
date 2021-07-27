@@ -143,8 +143,11 @@ namespace FSM47Player
     {
       VolumeJson volumeJson = new VolumeJson() {Amount = amount};
       string json = JsonSerializer.Serialize(volumeJson);
-      //_StateManager.Act(FsmEvents.SetVolume); // As this is marked WithJson, this will cause a runtime error 
-      _StateManager.Act(FsmEvents.SetVolume, json);
+      //_StateManager.Act(FsmEvents.SetVolume); // As this is marked WithJson in the construction block, this will cause a runtime error
+      // include the className parameter in addition to the json string
+      // to allow multiple classes to be passed through the event
+      // the receiving method will need to check the className to deserialize each class supported
+      _StateManager.Act(FsmEvents.SetVolume, nameof(VolumeJson), json);
     }
 
     private void btnPause_Click(object sender, EventArgs e)
@@ -237,19 +240,20 @@ namespace FSM47Player
       btnPlay.Enabled = false;
     }
 
-    private void OnUpdateVolume(string json)
+    private void OnUpdateVolume(string className, string json)
     {
-      UpdateVolume(json);
+      UpdateVolume(className, json);
       _StateManager.QueueAct(FsmEvents.OK);
     }
     
-    private void DoUpdateVolume(string json)
+    private void DoUpdateVolume(string className, string json)
     {
-      UpdateVolume(json);
+      UpdateVolume(className, json);
     }
 
-    private void UpdateVolume(string json)
+    private void UpdateVolume(string className, string json)
     {
+      // if multiple classes were being passed in, check the className here for how to deserialize/react in the code
       var volumeJson = JsonSerializer.Deserialize<VolumeJson>(json);
       lstConsole.Items.Add($"Volume set to: {volumeJson.Amount}");
     }
